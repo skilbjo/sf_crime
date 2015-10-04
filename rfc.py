@@ -11,7 +11,7 @@ file_dir = './data/'
 start = time()
 
 # Import train data
-train = pd.read_csv('{0}train.csv'.format(file_dir))
+train = pd.read_csv('{0}train.csv'.format(file_dir), parse_dates=['Dates'])[['PdDistrict','X','Y','Category']]
 
 # Data wrangling
 train.dropna()
@@ -47,8 +47,9 @@ feature_list = [
 
 # Set up columns for random forest, train
 feature_union = FeatureUnion(transformer_list=feature_list)
-x = feature_union.fit_transform(train)
-y = train['Category']
+# x = feature_union.fit_transform(train)
+x = train[['X','Y']]
+y = train['Category'].astype('category')
 
 # Train model
 model = RandomForestClassifier(n_jobs=2)
@@ -58,16 +59,24 @@ model.fit(x,y)
 test = pd.read_csv('{0}test.csv'.format(file_dir))
 
 # Columns for random forest, test
-x_test = feature_union.transform(test_df)
+x_test = [['X','Y']]
+# x_test = feature_union.transform(test_df)
 
 # Use model on test dataset
-prediction = model.predict_proba(x_test)
-pos_idx = np.where(model.classes_ == True)[0][0]
-test_df['prediction'] = prediction[:, pos_idx]
+# prediction = test['Category'].astype('category')
+# outcome = model.predict_proba(x_test)
+prediction = model.predict(x_test)
+
+submition = pd.DataFrame({'Id': test.Id.tolist()})
+for category in y.cat.categories:
+	submit[category] = np.where(outcome == category, 1, 0)
+
+# pos_idx = np.where(model.classes_ == True)[0][0]
+# test['prediction'] = prediction[:, pos_idx]
 
 # Export submission
-submission = test_df.apply(results)
-submission.to_csv('submission.csv', header=True)
+# submission = test_df.apply(results)
+submission.to_csv('submission.csv', header=True, index=False)
 
 # Done
 print('Finished. Script ran in {0} seconds'.format(time() - start))
