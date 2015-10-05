@@ -59,7 +59,7 @@ model.fit(x,y)
 test = pd.read_csv('{0}test.csv'.format(file_dir))
 
 # Columns for random forest, test
-x_test = [['X','Y']]
+x_test = test[['X','Y']]
 # x_test = feature_union.transform(test_df)
 
 # Use model on test dataset
